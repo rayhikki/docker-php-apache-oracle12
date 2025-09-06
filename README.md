@@ -1,8 +1,9 @@
 # docker-php-apache-oracle12
 
-PHP 7.4 + Apache2 + Oracle 12
+PHP 7.4 + Apache + Oracle Client V.11/12  
+PHP 8.3 + Apache + Oracle Client V.12
 
-## info ver
+# info ver
   
 root@10088d27e1d5:/var/www/html# apache2 -v  
 Server version: Apache/2.4.54 (Debian)  
@@ -29,3 +30,5 @@ oci8.ping_interval => 60 => 60
 oci8.privileged_connect => Off => Off  
 oci8.statement_cache_size => 20 => 20  
 
+# credit
+base on and modify from https://github.com/adrianharabula/php-oci8
