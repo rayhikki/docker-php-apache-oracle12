@@ -1,34 +1,38 @@
 FROM php:7.4-apache
 
-RUN apt-get update && apt-get install -y unzip zip libaio1 nano
+RUN apt-get update && apt-get install -y unzip nano libaio1
 
 COPY docker-php.conf /etc/apache2/conf-enabled/docker-php.conf
 
 RUN printf "log_errors = On \nerror_log = /dev/stderr\n" > /usr/local/etc/php/conf.d/php-logs.ini
 
-RUN a2enmod rewrite
+RUN docker-php-ext-install pdo_mysql && \
+    a2enmod rewrite
 
 # Oracle instantclient
-COPY instantclient-basiclite-linux-x86-64-11.2.0.2.0.zip /tmp/instantclient-basiclite-linux-x86-64-11.2.0.2.0.zip
+COPY instantclient-basic-linux.x64-11.2.0.4.0.zip /tmp/instantclient-basic-linux.x64-11.2.0.4.0.zip
 COPY instantclient-sdk-linux.x64-11.2.0.4.0.zip /tmp/instantclient-sdk-linux.x64-11.2.0.4.0.zip
 COPY instantclient-sqlplus-linux.x64-11.2.0.4.0.zip /tmp/instantclient-sqlplus-linux.x64-11.2.0.4.0.zip
 
-RUN ls -l /tmp/
+# RUN ls -l /tmp/
+RUN unzip /tmp/instantclient-basic-linux.x64-11.2.0.4.0.zip -d /usr/local/ && \
+    unzip /tmp/instantclient-sdk-linux.x64-11.2.0.4.0.zip -d /usr/local/ && \
+    unzip /tmp/instantclient-sqlplus-linux.x64-11.2.0.4.0.zip -d /usr/local/
 
-RUN unzip /tmp/instantclient-basiclite-linux-x86-64-11.2.0.2.0.zip -d /usr/local/
-RUN unzip /tmp/instantclient-sdk-linux.x64-11.2.0.4.0.zip -d /usr/local/
-RUN unzip /tmp/instantclient-sqlplus-linux.x64-11.2.0.4.0.zip -d /usr/local/
+RUN ln -s /usr/local/instantclient_11_2 /usr/local/instantclient && \
+    ln -s /usr/local/instantclient/libclntsh.so.11.1 /usr/local/instantclient/libclntsh.so && \
+    ln -s /usr/local/instantclient/sqlplus /usr/bin/sqlplus
 
-RUN ln -s /usr/local/instantclient_11_2 /usr/local/instantclient
-RUN ln -s /usr/local/instantclient/libclntsh.so.11.1 /usr/local/instantclient/libclntsh.so
-RUN ln -s /usr/local/instantclient/sqlplus /usr/bin/sqlplus
+RUN echo 'export LD_LIBRARY_PATH="/usr/local/instantclient"' >> /root/.bashrc && \
+    echo 'umask 002' >> /root/.bashrc
 
-RUN echo 'export LD_LIBRARY_PATH="/usr/local/instantclient"' >> /root/.bashrc
-RUN echo 'umask 002' >> /root/.bashrc
+RUN echo 'instantclient,/usr/local/instantclient' | pecl install pecl install oci8-2.2.0 && \
+    echo "extension=oci8.so" > /usr/local/etc/php/conf.d/php-oci8.ini
 
-RUN echo 'instantclient,/usr/local/instantclient' | pecl install pecl install oci8-2.2.0
-RUN echo "extension=oci8.so" > /usr/local/etc/php/conf.d/php-oci8.ini
-
-# RUN echo "<?php echo phpinfo(); ?>" > /var/www/html/phpinfo.php
+RUN sed -i -e '/^#\s*export LS_OPTIONS/s/^#\s*//' \
+           -e '/^#\s*alias ls=/s/^#\s*//' \
+           -e '/^#\s*alias ll=/s/^#\s*//' \
+           -e '/^#\s*alias l=/s/^#\s*//' \
+           /root/.bashrc
 
 EXPOSE 80

@@ -1,9 +1,11 @@
 services:
   php-apache-oci:
-    hostname: php-oci
+    image: php-oci-c12:php8.4
+    hostname: php-oci8
     build:
       context: .
       dockerfile: Dockerfile12p8
+    container_name: php-apache-oci
     ports:
       - "2222:80"
     volumes:
