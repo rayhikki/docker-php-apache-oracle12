@@ -1,0 +1,10 @@
+services:
+  php-apache-oci:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "2222:80"
+    volumes:
+      # Mounts the local ./html directory to the container's web root.
+      - ./html:/var/www/html
