@@ -1,8 +1,9 @@
 services:
   php-apache-oci:
+    hostname: php-oci
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile12p8
     ports:
       - "2222:80"
     volumes:
